@@ -1,11 +1,14 @@
+/**
+ * Manages the tasks stored by Ace.
+ */
 public class TaskManager{
     public static final int MAX_TASKS = 100;
 
-    Task[] tasks = new Task[MAX_TASKS];
-    int tasksCount;
+    private Task[] tasks = new Task[MAX_TASKS];
+    private int tasksCount;
 
     public Task getTask(int taskNumber){
-        if (taskNumber < MAX_TASKS && taskNumber < this.tasksCount){
+        if (taskNumber >= 0 && taskNumber < MAX_TASKS && taskNumber < tasksCount){
             return tasks[taskNumber];
         }
         return null;
@@ -15,11 +18,16 @@ public class TaskManager{
         return tasksCount;
     }
 
-    public int addTask(String task){
-        Task newTask = new Task(task);
-        if (this.tasksCount < MAX_TASKS) {
-            this.tasks[tasksCount] = newTask;
-            this.tasksCount++;
+    /**
+     * Adds a task to the task list.
+     *
+     * @param taskLabel Label of the task to add.
+     * @return 0 if the task was added successfully, or 1 if the task list is full.
+     */
+    public int addTask(String taskLabel){
+        if (tasksCount < MAX_TASKS) {
+            tasks[tasksCount] = new Task(taskLabel);
+            tasksCount++;
             return 0;
         } else {
             return 1;
@@ -28,8 +36,8 @@ public class TaskManager{
 
     public int markAsDone(int taskNumber){
         Task task = getTask(taskNumber);
-        if(!(task==null)) {
-            task.done = true;
+        if(task!=null) {
+            task.markAsDone();
             return 0;
         } else {
             return 1;
@@ -39,7 +47,7 @@ public class TaskManager{
     public int markAsUndone(int taskNumber){
         Task task = getTask(taskNumber);
         if(!(task==null)) {
-            task.done = false;
+            task.markAsUndone();
             return 0;
         } else {
             return 1;

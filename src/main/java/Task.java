@@ -1,6 +1,6 @@
 public class Task{
-    String label;
-    boolean done;
+    private String label;
+    private boolean isDone;
 
     public Task(){
         this("");
@@ -12,7 +12,7 @@ public class Task{
 
     public Task (String taskLabel, boolean taskStatus){
         this.label = taskLabel;
-        this.done = taskStatus;
+        this.isDone = taskStatus;
     }
 
     public String getLabel(){
@@ -20,6 +20,14 @@ public class Task{
     }
 
     public boolean isDone(){
-        return done;
+        return isDone;
+    }
+
+    public void markAsDone() {
+        isDone = true;
+    }
+
+    public void markAsUndone() {
+        isDone = false;
     }
 }
