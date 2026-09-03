@@ -79,106 +79,122 @@ public class Ace {
         return false;
     }
 
+    private static boolean processCommand(String line) {
+        String[] lineWords = line.split(" ");
+        String keyword = lineWords[0];
+
+        if (!inAuthorizedCommands(keyword)) {
+            printAceMessage(UNKNOWN_MESSAGE);
+            return true;
+        }
+
+        switch (keyword) {
+            case "help":
+                printAceMessage("help");
+                break;
+            case "bye":
+                printAceMessage(BYE_MESSAGE);
+                return false;
+            case "list":
+                printTaskList();
+                break;
+            case "mark":
+                markTask(lineWords);
+                break;
+            case "unmark":
+                unmarkTask(lineWords);
+                break;
+            case "todo":
+                addTodo(line);
+                break;
+            case "deadline":
+                addDeadline(line);
+                break;
+            case "event":
+                addEvent(line);
+                break;
+            default:
+                printAceMessage(UNKNOWN_MESSAGE);
+                break;
+        }
+
+        return true;
+    }
+
+    private static void markTask(String[] lineWords) {
+        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
+        int taskErrorCode = taskManager.markAsDone(taskNumber);
+
+        if (taskErrorCode > 0) {
+            printAceMessage(UNKNOWN_MESSAGE);
+        } else {
+            printTaskMarkedDone(taskNumber);
+        }
+    }
+
+    private static void unmarkTask(String[] lineWords) {
+        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
+        int taskErrorCode = taskManager.markAsUndone(taskNumber);
+
+        if (taskErrorCode > 0) {
+            printAceMessage(UNKNOWN_MESSAGE);
+        } else {
+            printTaskMarkedUndone(taskNumber);
+        }
+    }
+
+    private static void addTodo(String line) {
+        String description = line.substring("todo".length()).trim();
+        Task task = new Todo(description);
+        addTask(task);
+    }
+
+    private static void addDeadline(String line) {
+        int byIndex = line.indexOf("/by");
+
+        String description = line.substring(
+                "deadline".length(), byIndex).trim();
+        String by = line.substring(byIndex + 3).trim();
+
+        Task task = new Deadline(description, by);
+        addTask(task);
+    }
+
+    private static void addEvent(String line) {
+        int fromIndex = line.indexOf("/from");
+        int toIndex = line.indexOf("/to");
+
+        String description = line.substring(
+                "event".length(), fromIndex).trim();
+        String from = line.substring(fromIndex + 5, toIndex).trim();
+        String to = line.substring(toIndex + 3).trim();
+
+        Task task = new Event(description, from, to);
+        addTask(task);
+    }
+
+    private static void addTask(Task task) {
+        int taskErrorCode = taskManager.addTask(task);
+
+        if (taskErrorCode > 0) {
+            throwAceError("Too many tasks have been added, time to work.");
+        } else {
+            printAceMessage("Got it. I've added this task:\n\t" + task);
+        }
+    }
+
     public static void main(String[] args) {
         Scanner in = new Scanner(System.in);
+
         printAceMessage(BANNER);
         printAceMessage(WELCOME_MESSAGE);
         printAceMessage(ASSISTANCE_MESSAGE);
 
-        outerInputLoop:
-        while(true) {
+        boolean isRunning = true;
+
+        while (isRunning) {
             String line = in.nextLine();
-            String[] lineWords = line.split(" ");
-            String keyword = lineWords[0];
-
-            if (inAuthorizedCommands(keyword)) {
-                switch(keyword) {
-                    case "help":
-                        printAceMessage("help");
-                        break;
-                    case "bye":
-                        printAceMessage(BYE_MESSAGE);
-                        break outerInputLoop;
-                    case "list":
-                        printTaskList();
-                        break;
-                    case "mark": {
-                        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-                        int taskErrorCode = taskManager.markAsDone(taskNumber);
-                        if (taskErrorCode > 0) {
-                            printAceMessage(UNKNOWN_MESSAGE);
-                        } else {
-                            printTaskMarkedDone(taskNumber);
-                        }
-                        break;
-                    }
-                    case "unmark": {
-                        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-                        int taskErrorCode = taskManager.markAsUndone(taskNumber);
-                        if (taskErrorCode > 0) {
-                            printAceMessage(UNKNOWN_MESSAGE);
-                        } else {
-                            printTaskMarkedUndone(taskNumber);
-                        }
-                        break;
-                    }
-                    case "todo": {
-                        String description = line.substring("todo".length()).trim();
-                        Task task = new Todo(description);
-                        int taskErrorCode = taskManager.addTask(task);
-
-                        if (taskErrorCode > 0) {
-                            throwAceError("Too many tasks have been added, time to work.");
-                        } else {
-                            printAceMessage("Got it. I've added this task:\n\t" + task);
-                        }
-                        break;
-                    }
-                    case "deadline": {
-                        int byIndex = line.indexOf("/by");
-
-                        String description = line.substring(
-                                "deadline".length(), byIndex).trim();
-                        String by = line.substring(byIndex + 3).trim();
-
-                        Task task = new Deadline(description, by);
-                        int taskErrorCode = taskManager.addTask(task);
-
-                        if (taskErrorCode > 0) {
-                            throwAceError("Too many tasks have been added, time to work.");
-                        } else {
-                            printAceMessage("Got it. I've added this task:\n\t" + task);
-                        }
-                        break;
-
-                    }
-                    case "event": {
-                        int fromIndex = line.indexOf("/from");
-                        int toIndex = line.indexOf("/to");
-
-                        String description = line.substring(
-                                "event".length(), fromIndex).trim();
-                        String from = line.substring(fromIndex + 5, toIndex).trim();
-                        String to = line.substring(toIndex + 3).trim();
-
-                        Task task = new Event(description, from, to);
-                        int taskErrorCode = taskManager.addTask(task);
-
-                        if (taskErrorCode > 0) {
-                            throwAceError("Too many tasks have been added, time to work.");
-                        } else {
-                            printAceMessage("Got it. I've added this task:\n\t" + task);
-                        }
-                        break;
-                    }
-                    default:
-                        printAceMessage(UNKNOWN_MESSAGE);
-                        break;
-                }
-            } else {
-                printAceMessage(UNKNOWN_MESSAGE);
-            }
-
+            isRunning = processCommand(line);
         }
     }
 }
