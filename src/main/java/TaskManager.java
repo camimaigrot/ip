@@ -24,9 +24,9 @@ public class TaskManager{
      * @param taskLabel Label of the task to add.
      * @return 0 if the task was added successfully, or 1 if the task list is full.
      */
-    public int addTask(String taskLabel){
+    public int addTask(Task task){
         if (tasksCount < MAX_TASKS) {
-            tasks[tasksCount] = new Task(taskLabel);
+            tasks[tasksCount] = task;
             tasksCount++;
             return 0;
         } else {

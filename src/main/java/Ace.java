@@ -22,7 +22,10 @@ public class Ace {
     public static final String BYE_MESSAGE = "Catch you later.";
     public static final String UNKNOWN_MESSAGE = "?";
 
-    public static final String[] AUTHORIZED_COMMANDS = {"help", "bye", "list", "mark", "unmark"};
+    public static final String[] AUTHORIZED_COMMANDS = {
+            "help", "bye", "list", "mark", "unmark",
+            "todo", "deadline", "event"
+    };
 
     private static final TaskManager taskManager = new TaskManager();
 
@@ -45,8 +48,7 @@ public class Ace {
             System.out.print("\tYour tasks:\n");
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
-                String crossIfDone = task.isDone() ? "X" : " ";
-                System.out.println("\t" + (i + 1) + ": [" + crossIfDone + "] " + task.getLabel());
+                System.out.println("\t" + (i + 1) + "." + task);
             }
         }
         printAceSeparation();
@@ -54,12 +56,12 @@ public class Ace {
 
     public static void printTaskMarkedDone(int taskNumber) {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("Done with this task:\n" + "\t   [X] "+task.getLabel());
+        printAceMessage("Done with this task:\n" + "\t" + task);
     }
 
     public static void printTaskMarkedUndone(int taskNumber) {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("Marked this task to undone:\n"+"\t   [ ] "+task.getLabel());
+        printAceMessage("Marked this task to undone:\n" + "\t" + task);
     }
 
     public static void throwAceError(String error) {
@@ -120,18 +122,63 @@ public class Ace {
                         }
                         break;
                     }
+                    case "todo": {
+                        String description = line.substring("todo".length()).trim();
+                        Task task = new Todo(description);
+                        int taskErrorCode = taskManager.addTask(task);
+
+                        if (taskErrorCode > 0) {
+                            throwAceError("Too many tasks have been added, time to work.");
+                        } else {
+                            printAceMessage("Got it. I've added this task:\n\t" + task);
+                        }
+                        break;
+                    }
+                    case "deadline": {
+                        int byIndex = line.indexOf("/by");
+
+                        String description = line.substring(
+                                "deadline".length(), byIndex).trim();
+                        String by = line.substring(byIndex + 3).trim();
+
+                        Task task = new Deadline(description, by);
+                        int taskErrorCode = taskManager.addTask(task);
+
+                        if (taskErrorCode > 0) {
+                            throwAceError("Too many tasks have been added, time to work.");
+                        } else {
+                            printAceMessage("Got it. I've added this task:\n\t" + task);
+                        }
+                        break;
+
+                    }
+                    case "event": {
+                        int fromIndex = line.indexOf("/from");
+                        int toIndex = line.indexOf("/to");
+
+                        String description = line.substring(
+                                "event".length(), fromIndex).trim();
+                        String from = line.substring(fromIndex + 5, toIndex).trim();
+                        String to = line.substring(toIndex + 3).trim();
+
+                        Task task = new Event(description, from, to);
+                        int taskErrorCode = taskManager.addTask(task);
+
+                        if (taskErrorCode > 0) {
+                            throwAceError("Too many tasks have been added, time to work.");
+                        } else {
+                            printAceMessage("Got it. I've added this task:\n\t" + task);
+                        }
+                        break;
+                    }
                     default:
                         printAceMessage(UNKNOWN_MESSAGE);
                         break;
                 }
             } else {
-                int taskErrorCode = taskManager.addTask(line);
-                if (taskErrorCode > 0) {
-                    throwAceError("Too many tasks have been added, time to work.");
-                } else {
-                    printAceMessage("Added task: "+ line);
-                }
+                printAceMessage(UNKNOWN_MESSAGE);
             }
+
         }
     }
 }
