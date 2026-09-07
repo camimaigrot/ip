@@ -17,10 +17,10 @@ public class Ace {
         "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠻⠟⠁⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
         "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
     public static final String HL = "______________________________";
-    public static final String WELCOME_MESSAGE = "Welcome, Ace  here.";
-    public static final String ASSISTANCE_MESSAGE = "What can I do for you?";
-    public static final String BYE_MESSAGE = "Catch you later.";
-    public static final String UNKNOWN_MESSAGE = "?";
+    public static final String WELCOME_MESSAGE = "Hi, I'm Ace, hopefully I'll ace this.";
+    public static final String ASSISTANCE_MESSAGE = "Oh, you need help? Uh... Not sure I' m the right person, but I'll try.";
+    public static final String BYE_MESSAGE = "Leaving already? Sorry for the mistakes.";
+    public static final String UNKNOWN_MESSAGE = "I'm not sure I understand, sorry.";
 
     public static final String[] AUTHORIZED_COMMANDS = {
             "help", "bye", "list", "mark", "unmark",
@@ -43,9 +43,9 @@ public class Ace {
         printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
-            System.out.print("\tNo tasks.\n");
+            System.out.print("\tI don't know what happened or if I messed something up, but... you have no tasks available.\n");
         } else {
-            System.out.print("\tYour tasks:\n");
+            System.out.print("\tI think these might be your tasks:\n");
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
                 System.out.println("\t" + (i + 1) + "." + task);
@@ -56,12 +56,12 @@ public class Ace {
 
     public static void printTaskMarkedDone(int taskNumber) {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("Done with this task:\n" + "\t" + task);
+        printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
     }
 
     public static void printTaskMarkedUndone(int taskNumber) {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("Marked this task to undone:\n" + "\t" + task);
+        printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
     }
 
     public static void throwAceError(String error) {
@@ -177,9 +177,9 @@ public class Ace {
         int taskErrorCode = taskManager.addTask(task);
 
         if (taskErrorCode > 0) {
-            throwAceError("Too many tasks have been added, time to work.");
+            throwAceError("Oh, I don't know what went wrong. I swear, I'm trying, but it looks like I can't add this new task.");
         } else {
-            printAceMessage("Got it. I've added this task:\n\t" + task);
+            printAceMessage("I think I managed to add this new task:\n\t" + task);
         }
     }
 
