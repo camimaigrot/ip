@@ -1,28 +1,8 @@
 import java.util.Scanner;
 
 public class Ace {
-    public static final String BANNER = "⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠀⣠⣄⠀⠙⠻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⣠⡾⣿⡟⠁⠀⠀⠀⠈⠙⠻⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠁⠀⠁⠀⠿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠉⠻⢿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⣀⣀⣤⣾⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⠏⠀⠀⢀⣴⢶⣿⣿⡿⠛⠉⣿⡆⠀⠀⠀⠀⠀⠀⠀⣸⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⡿⠃⠀⠀⢀⣿⠁⢸⣿⣿⠆⢀⣀⣿⣿⠀⠀⠀⠀⠀⠀⣰⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⡿⠁⠀⠀⠀⠈⢿⡄⠀⠈⣉⠀⣾⣿⣿⢿⡇⠀⠀⠀⠀⣴⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠈⠙⣛⣿⣿⡄⠀⠉⠁⣼⠇⠀⠀⢀⣼⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⡟⠁⠀⠀⠀⠀⠀⠀⠐⠾⣿⣿⠋⠛⠶⠶⠞⠋⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⠀⠀⠀⠀⠀⠀⣠⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣷⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣶⠀⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣷⣦⣄⡀⠀⠀⠀⠀⣸⣿⡴⠟⠀⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣀⠀⠻⠟⠁⠀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿\n" +
-        "\t⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣴⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿";
-    public static final String HL = "______________________________";
-    public static final String WELCOME_MESSAGE = "Hi, I'm Ace, hopefully I'll ace this.";
-    public static final String ASSISTANCE_MESSAGE = "Oh, you need help? Uh... Not sure I' m the right person, but I'll try.";
-    public static final String BYE_MESSAGE = "Leaving already? Sorry for the mistakes.";
-    public static final String UNKNOWN_MESSAGE = "I'm not sure I understand, sorry.";
 
-    public static final String[] AUTHORIZED_COMMANDS = {
+     static final String[] AUTHORIZED_COMMANDS = {
             "help", "bye", "list", "mark", "unmark",
             "todo", "deadline", "event"
     };
@@ -36,16 +16,16 @@ public class Ace {
     }
 
     public static void printAceSeparation() {
-        System.out.print("\t" + HL + "\n");
+        System.out.print("\t" + Messages.HL + "\n");
     }
 
-    public static void printTaskList() {
+    public static void printTaskList() throws AceException {
         printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
             System.out.print("\tI don't know what happened or if I messed something up, but... you have no tasks available.\n");
         } else {
-            System.out.print("\tI think these might be your tasks:\n");
+            System.out.print("\tThese should be your tasks:\n");
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
                 System.out.println("\t" + (i + 1) + "." + task);
@@ -54,12 +34,12 @@ public class Ace {
         printAceSeparation();
     }
 
-    public static void printTaskMarkedDone(int taskNumber) {
+    public static void printTaskMarkedDone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
     }
 
-    public static void printTaskMarkedUndone(int taskNumber) {
+    public static void printTaskMarkedUndone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
     }
@@ -79,13 +59,12 @@ public class Ace {
         return false;
     }
 
-    private static boolean processCommand(String line) {
+    private static boolean processCommand(String line) throws AceException {
         String[] lineWords = line.split(" ");
         String keyword = lineWords[0];
 
         if (!inAuthorizedCommands(keyword)) {
-            printAceMessage(UNKNOWN_MESSAGE);
-            return true;
+            throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
         }
 
         switch (keyword) {
@@ -93,7 +72,7 @@ public class Ace {
                 printAceMessage("help");
                 break;
             case "bye":
-                printAceMessage(BYE_MESSAGE);
+                printAceMessage(Messages.BYE_MESSAGE);
                 return false;
             case "list":
                 printTaskList();
@@ -114,44 +93,34 @@ public class Ace {
                 addEvent(line);
                 break;
             default:
-                printAceMessage(UNKNOWN_MESSAGE);
-                break;
+                throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
         }
-
         return true;
     }
 
-    private static void markTask(String[] lineWords) {
+    private static void markTask(String[] lineWords) throws AceException {
         int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-        int taskErrorCode = taskManager.markAsDone(taskNumber);
-
-        if (taskErrorCode > 0) {
-            printAceMessage(UNKNOWN_MESSAGE);
-        } else {
-            printTaskMarkedDone(taskNumber);
-        }
+        taskManager.markAsDone(taskNumber);
+        printTaskMarkedDone(taskNumber);
     }
 
-    private static void unmarkTask(String[] lineWords) {
+    private static void unmarkTask(String[] lineWords) throws AceException {
         int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-        int taskErrorCode = taskManager.markAsUndone(taskNumber);
-
-        if (taskErrorCode > 0) {
-            printAceMessage(UNKNOWN_MESSAGE);
-        } else {
-            printTaskMarkedUndone(taskNumber);
-        }
+        taskManager.markAsUndone(taskNumber);
+        printTaskMarkedUndone(taskNumber);
     }
 
-    private static void addTodo(String line) {
+    private static void addTodo(String line) throws AceException {
         String description = line.substring("todo".length()).trim();
         Task task = new Todo(description);
         addTask(task);
     }
 
-    private static void addDeadline(String line) {
+    private static void addDeadline(String line) throws AceException {
         int byIndex = line.indexOf("/by");
-
+        if (byIndex == -1) {
+            throw new AceException(Messages.NO_BY_DEADLINE_EXCEPTION);
+        }
         String description = line.substring(
                 "deadline".length(), byIndex).trim();
         String by = line.substring(byIndex + 3).trim();
@@ -160,9 +129,15 @@ public class Ace {
         addTask(task);
     }
 
-    private static void addEvent(String line) {
+    private static void addEvent(String line) throws AceException {
         int fromIndex = line.indexOf("/from");
+        if (fromIndex == -1) {
+            throw new AceException(Messages.NO_FROM_EVENT_EXCEPTION);
+        }
         int toIndex = line.indexOf("/to");
+        if (toIndex == -1) {
+            throw new AceException(Messages.NO_TO_EVENT_EXCEPTION);
+        }
 
         String description = line.substring(
                 "event".length(), fromIndex).trim();
@@ -173,28 +148,27 @@ public class Ace {
         addTask(task);
     }
 
-    private static void addTask(Task task) {
-        int taskErrorCode = taskManager.addTask(task);
-
-        if (taskErrorCode > 0) {
-            throwAceError("Oh, I don't know what went wrong. I swear, I'm trying, but it looks like I can't add this new task.");
-        } else {
-            printAceMessage("I think I managed to add this new task:\n\t" + task);
-        }
+    private static void addTask(Task task) throws AceException {
+        taskManager.addTask(task);
+        printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws AceException {
         Scanner in = new Scanner(System.in);
 
-        printAceMessage(BANNER);
-        printAceMessage(WELCOME_MESSAGE);
-        printAceMessage(ASSISTANCE_MESSAGE);
+        printAceMessage(Messages.BANNER);
+        printAceMessage(Messages.WELCOME_MESSAGE);
+        printAceMessage(Messages.ASSISTANCE_MESSAGE);
 
         boolean isRunning = true;
 
         while (isRunning) {
             String line = in.nextLine();
-            isRunning = processCommand(line);
+            try {
+                isRunning = processCommand(line);
+            } catch (AceException e) {
+                throwAceError(e.getMessage());
+            }
         }
     }
 }

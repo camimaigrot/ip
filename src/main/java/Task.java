@@ -19,6 +19,10 @@ public class Task{
         return label;
     }
 
+    public boolean isEmpty() {
+        return label.isBlank();
+    }
+
     public boolean isDone() {
         return isDone;
     }

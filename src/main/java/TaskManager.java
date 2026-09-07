@@ -2,16 +2,16 @@
  * Manages the tasks stored by Ace.
  */
 public class TaskManager{
-    public static final int MAX_TASKS = 100;
+    public final int MAX_TASKS = 100;
 
     private Task[] tasks = new Task[MAX_TASKS];
     private int tasksCount;
 
-    public Task getTask(int taskNumber){
-        if (taskNumber >= 0 && taskNumber < MAX_TASKS && taskNumber < tasksCount){
-            return tasks[taskNumber];
+    public Task getTask(int taskNumber) throws AceException {
+        if (taskNumber < 0 || taskNumber >= tasksCount){
+            throw new AceException(Messages.UNKNOWN_TASK_EXCEPTION);
         }
-        return null;
+        return tasks[taskNumber];
     }
 
     public int getTasksCount(){
@@ -21,36 +21,29 @@ public class TaskManager{
     /**
      * Adds a task to the task list.
      *
-     * @param taskLabel Label of the task to add.
-     * @return 0 if the task was added successfully, or 1 if the task list is full.
+     * @param task the task to add.
      */
-    public int addTask(Task task){
-        if (tasksCount < MAX_TASKS) {
-            tasks[tasksCount] = task;
-            tasksCount++;
-            return 0;
-        } else {
-            return 1;
+    public void addTask(Task task) throws AceException {
+        if (task == null) {
+            throw new AceException(Messages.INVALID_TASK_EXCEPTION);
         }
+        if (task.isEmpty()){
+            throw new AceException(Messages.EMPTY_TASK_EXCEPTION);
+        }
+        if (tasksCount >= MAX_TASKS) {
+            throw new AceException(Messages.OUT_OF_BOUNDS_TASK_EXCEPTION);
+        }
+        tasks[tasksCount] = task;
+        tasksCount++;
     }
 
-    public int markAsDone(int taskNumber){
+    public void markAsDone(int taskNumber) throws AceException {
         Task task = getTask(taskNumber);
-        if(task!=null) {
-            task.markAsDone();
-            return 0;
-        } else {
-            return 1;
-        }
+        task.markAsDone();
     }
 
-    public int markAsUndone(int taskNumber){
+    public void markAsUndone(int taskNumber) throws AceException {
         Task task = getTask(taskNumber);
-        if(!(task==null)) {
-            task.markAsUndone();
-            return 0;
-        } else {
-            return 1;
-        }
+        task.markAsUndone();
     }
 }
