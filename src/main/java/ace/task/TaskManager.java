@@ -1,3 +1,6 @@
+package ace.task;
+import ace.exception.*;
+import ace.ui.*;
 /**
  * Manages the tasks stored by Ace.
  */

@@ -1,4 +1,9 @@
+package ace;
+
 import java.util.Scanner;
+import ace.ui.*;
+import ace.task.*;
+import ace.exception.*;
 
 public class Ace {
 
