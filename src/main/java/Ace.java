@@ -10,9 +10,17 @@ public class Ace {
     private static final TaskManager taskManager = new TaskManager();
 
     public static void printAceMessage(String message) {
-        printAceSeparation();
+        printAceMessage(message, true);
+    }
+
+    public static void printAceMessage(String message, boolean withSeparation) {
+        if (withSeparation) {
+            printAceSeparation();
+        }
         System.out.print("\t" + message + "\n");
-        printAceSeparation();
+        if (withSeparation) {
+            printAceSeparation();
+        }
     }
 
     public static void printAceSeparation() {
@@ -23,12 +31,12 @@ public class Ace {
         printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
-            System.out.print("\tI don't know what happened or if I messed something up, but... you have no tasks available.\n");
+            printAceMessage("\tI don't know what happened or if I messed something up, but... you have no tasks available.\n", false);
         } else {
-            System.out.print("\tThese should be your tasks:\n");
+            printAceMessage("\tThese should be your tasks:\n", false);
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
-                System.out.println("\t" + (i + 1) + "." + task);
+                printAceMessage("\t" + (i + 1) + "." + task, false);
             }
         }
         printAceSeparation();
