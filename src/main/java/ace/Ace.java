@@ -8,17 +8,17 @@ import ace.exception.*;
 public class Ace {
 
      static final String[] AUTHORIZED_COMMANDS = {
-            "help", "bye", "list", "mark", "unmark",
+            "help", "bye", "list", "mark", "unmark", "delete",
             "todo", "deadline", "event"
     };
 
     private static final TaskManager taskManager = new TaskManager();
 
-    public static void printAceMessage(String message) {
+    public static void printAceMessage(Object message) {
         printAceMessage(message, true);
     }
 
-    public static void printAceMessage(String message, boolean withSeparation) {
+    public static void printAceMessage(Object message, boolean withSeparation) {
         if (withSeparation) {
             printAceSeparation();
         }
@@ -36,12 +36,12 @@ public class Ace {
         printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
-            printAceMessage("\tI don't know what happened or if I messed something up, but... you have no tasks available.\n", false);
+            printAceMessage("I don't know what happened or if I messed something up, but... you have no tasks available.", false);
         } else {
-            printAceMessage("\tThese should be your tasks:\n", false);
+            printAceMessage("These should be your tasks:\n", false);
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
-                printAceMessage("\t" + (i + 1) + "." + task, false);
+                printAceMessage((i + 1) + "." + task, false);
             }
         }
         printAceSeparation();
@@ -105,10 +105,31 @@ public class Ace {
             case "event":
                 addEvent(line);
                 break;
+            case "delete":
+                deleteTask(lineWords);
+                break;
             default:
                 throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
         }
         return true;
+    }
+
+    private static void deleteTask(String[] lineWords) throws AceException {
+        if (lineWords.length != 2) {
+            throw new AceException(Messages.INVALID_DELETE_EXCEPTION);
+        }
+
+        int taskNumber;
+
+        try {
+            taskNumber = Integer.parseInt(lineWords[1]) - 1;
+        } catch (NumberFormatException e) {
+            throw new AceException(Messages.INVALID_DELETE_EXCEPTION);
+        }
+
+        Task deletedTask = taskManager.deleteTask(taskNumber);
+
+        printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask + "\n\tNow you have... " + taskManager.getTasksCount()+ " tasks in the list.");
     }
 
     private static void markTask(String[] lineWords) throws AceException {

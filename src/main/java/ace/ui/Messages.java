@@ -30,5 +30,5 @@ public class Messages {
     public static final String NO_BY_DEADLINE_EXCEPTION = "I must have missed the actual deadline (given with /by). Could you retype the command please?";
     public static final String NO_FROM_EVENT_EXCEPTION = "I must have missed the beginning of the event (given with /from). Could you retype the command please?";
     public static final String NO_TO_EVENT_EXCEPTION = "I must have missed the end of the event (given with /to). Could you retype the command please?";
-
+    public static final String INVALID_DELETE_EXCEPTION = "Please... Could you specify a valid task number to delete?";
 }

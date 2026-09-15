@@ -1,24 +1,23 @@
 package ace.task;
 import ace.exception.*;
 import ace.ui.*;
+
+import java.util.ArrayList;
 /**
  * Manages the tasks stored by Ace.
  */
 public class TaskManager{
-    public final int MAX_TASKS = 100;
-
-    private Task[] tasks = new Task[MAX_TASKS];
-    private int tasksCount;
+    private ArrayList<Task> tasks = new ArrayList<>();
 
     public Task getTask(int taskNumber) throws AceException {
-        if (taskNumber < 0 || taskNumber >= tasksCount){
+        if (taskNumber < 0 || taskNumber >= tasks.size()){
             throw new AceException(Messages.UNKNOWN_TASK_EXCEPTION);
         }
-        return tasks[taskNumber];
+        return tasks.get(taskNumber);
     }
 
     public int getTasksCount(){
-        return tasksCount;
+        return tasks.size();
     }
 
     /**
@@ -33,13 +32,15 @@ public class TaskManager{
         if (task.isEmpty()){
             throw new AceException(Messages.EMPTY_TASK_EXCEPTION);
         }
-        if (tasksCount >= MAX_TASKS) {
-            throw new AceException(Messages.OUT_OF_BOUNDS_TASK_EXCEPTION);
-        }
-        tasks[tasksCount] = task;
-        tasksCount++;
+        tasks.add(task);
     }
 
+    public Task deleteTask(int taskNumber) throws AceException {
+        Task task = getTask(taskNumber);
+        tasks.remove(taskNumber);
+        return task;
+    }
+    
     public void markAsDone(int taskNumber) throws AceException {
         Task task = getTask(taskNumber);
         task.markAsDone();
