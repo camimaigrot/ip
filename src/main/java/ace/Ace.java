@@ -135,7 +135,7 @@ public class Ace {
         }
 
         Task deletedTask = taskManager.deleteTask(taskNumber);
-
+        saveTasks();
         printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask + "\n\tNow you have... " + taskManager.getTasksCount()+ " tasks in the list.");
     }
 
