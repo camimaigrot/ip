@@ -1,9 +1,15 @@
 package ace;
 
+import java.util.ArrayList;
 import java.util.Scanner;
-import ace.ui.*;
-import ace.task.*;
-import ace.exception.*;
+import ace.ui.Messages;
+import ace.task.Deadline;
+import ace.task.Event;
+import ace.task.Task;
+import ace.task.TaskManager;
+import ace.task.Todo;
+import ace.exception.AceException;
+import ace.storage.Storage;
 
 public class Ace {
 
@@ -13,6 +19,7 @@ public class Ace {
     };
 
     private static final TaskManager taskManager = new TaskManager();
+    private static final Storage storage = new Storage();
 
     public static void printAceMessage(String message) {
         printAceMessage(message, true);
@@ -114,12 +121,14 @@ public class Ace {
     private static void markTask(String[] lineWords) throws AceException {
         int taskNumber = Integer.parseInt(lineWords[1]) - 1;
         taskManager.markAsDone(taskNumber);
+        saveTasks();
         printTaskMarkedDone(taskNumber);
     }
 
     private static void unmarkTask(String[] lineWords) throws AceException {
         int taskNumber = Integer.parseInt(lineWords[1]) - 1;
         taskManager.markAsUndone(taskNumber);
+        saveTasks();
         printTaskMarkedUndone(taskNumber);
     }
 
@@ -163,11 +172,22 @@ public class Ace {
 
     private static void addTask(Task task) throws AceException {
         taskManager.addTask(task);
+        saveTasks();
         printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
     public static void main(String[] args) throws AceException {
         Scanner in = new Scanner(System.in);
+
+        try {
+            ArrayList<Task> savedTasks = storage.loadTasks();
+
+            for (Task task : savedTasks) {
+                taskManager.addTask(task);
+            }
+        } catch (AceException e) {
+            throwAceError(e.getMessage());
+        }
 
         printAceMessage(Messages.BANNER);
         printAceMessage(Messages.WELCOME_MESSAGE);
@@ -183,5 +203,9 @@ public class Ace {
                 throwAceError(e.getMessage());
             }
         }
+    }
+
+    private static void saveTasks() throws AceException {
+        storage.saveTasks(taskManager);
     }
 }
