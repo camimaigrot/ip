@@ -1,7 +1,5 @@
 package ace;
 
-import java.util.ArrayList;
-
 import ace.exception.AceException;
 import ace.storage.Storage;
 import ace.parser.Parser;
@@ -15,7 +13,7 @@ import ace.ui.Ui;
  * Coordinates task management, persistence and user commands in Ace.
  */
 public class Ace {
-    private static final TaskManager taskManager = new TaskManager();
+    private static TaskManager taskManager = new TaskManager();
     private static final Storage storage = new Storage();
     private static final Ui ui = new Ui();
 
@@ -100,11 +98,7 @@ public class Ace {
 
     public static void main(String[] args) throws AceException {
         try {
-            ArrayList<Task> savedTasks = storage.loadTasks();
-
-            for (Task task : savedTasks) {
-                taskManager.addTask(task);
-            }
+            taskManager = new TaskManager(storage.loadTasks());
         } catch (AceException e) {
             ui.showError(e.getMessage());
         }
