@@ -1,5 +1,8 @@
 package ace.parser;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+
 import ace.exception.AceException;
 import ace.task.Deadline;
 import ace.task.Event;
@@ -11,6 +14,11 @@ import ace.ui.Messages;
  * Interprets user input and extracts the arguments needed to execute a command.
  */
 public final class Parser {
+    private static final String INVALID_DATE_MESSAGE =
+            "It seems like you should, in my opinion, enter a valid date as yyyy-MM-dd (e.g., 2026-10-15).";
+    private static final String INVALID_DATE_RANGE_MESSAGE =
+            "I'm (relatively) sure the event must end on or after its start date.";
+
     private Parser() {
     }
 
@@ -83,7 +91,7 @@ public final class Parser {
         }
         String description = line.substring("deadline".length(), byIndex).trim();
         String by = line.substring(byIndex + "/by".length()).trim();
-        return new Deadline(description, by);
+        return new Deadline(description, parseDate(by));
     }
 
     private static Event parseEvent(String line) throws AceException {
@@ -98,7 +106,27 @@ public final class Parser {
         String description = line.substring("event".length(), fromIndex).trim();
         String from = line.substring(fromIndex + "/from".length(), toIndex).trim();
         String to = line.substring(toIndex + "/to".length()).trim();
-        return new Event(description, from, to);
+        LocalDate startDate = parseDate(from);
+        LocalDate endDate = parseDate(to);
+        if (endDate.isBefore(startDate)) {
+            throw new AceException(INVALID_DATE_RANGE_MESSAGE);
+        }
+        return new Event(description, startDate, endDate);
+    }
+
+    /**
+     * Reads an ISO-format date from a user command.
+     *
+     * @param input date in yyyy-MM-dd format
+     * @return parsed date
+     * @throws AceException if the date is missing or invalid
+     */
+    private static LocalDate parseDate(String input) throws AceException {
+        try {
+            return LocalDate.parse(input);
+        } catch (DateTimeParseException exception) {
+            throw new AceException(INVALID_DATE_MESSAGE);
+        }
     }
 
     /**
