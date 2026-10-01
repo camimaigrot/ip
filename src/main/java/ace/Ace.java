@@ -9,6 +9,8 @@ import ace.task.TaskManager;
 import ace.ui.Messages;
 import ace.ui.Ui;
 
+import java.util.List;
+
 /**
  * Coordinates task management, persistence and user commands in Ace.
  */
@@ -29,6 +31,28 @@ public class Ace {
         for (int i = 0; i < taskCount; i++) {
             Task task = taskManager.getTask(i);
             message.append("\n\t").append(i + 1).append(".").append(task);
+        }
+        ui.printAceMessage(message);
+    }
+
+    /**
+     * Displays tasks whose descriptions contain the requested keyword.
+     * Task numbers correspond to their positions in the full task list.
+     *
+     * @param keyword text to search for in task descriptions
+     * @throws AceException if a matching task cannot be retrieved
+     */
+    private static void printMatchingTasks(String keyword) throws AceException {
+        List<Integer> indices = taskManager.findTaskIndices(keyword);
+        if (indices.isEmpty()) {
+            ui.printAceMessage("I couldn't find any tasks containing: " + keyword);
+            return;
+        }
+
+        StringBuilder message = new StringBuilder("Here are the matching tasks in your list:");
+        for (int index : indices) {
+            message.append("\n\t").append(index + 1).append(".")
+                    .append(taskManager.getTask(index));
         }
         ui.printAceMessage(message);
     }
@@ -62,6 +86,9 @@ public class Ace {
             return false;
         case "list":
             printTaskList();
+            break;
+        case "find":
+            printMatchingTasks(command.getSearchTerm());
             break;
         case "mark":
             taskManager.markAsDone(command.getTaskNumber());

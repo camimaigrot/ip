@@ -2,6 +2,7 @@ package ace.task;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import ace.exception.AceException;
 import ace.ui.Messages;
@@ -69,6 +70,24 @@ public class TaskManager {
             throw new AceException(Messages.EMPTY_TASK_EXCEPTION);
         }
         tasks.add(task);
+    }
+
+    /**
+     * Finds original task indices whose descriptions contain the keyword.
+     * Matching ignores case and does not change the task list.
+     *
+     * @param keyword nonempty text to search for
+     * @return zero-based indices of matching tasks in their original order
+     */
+    public List<Integer> findTaskIndices(String keyword) {
+        String searchTerm = keyword.toLowerCase(Locale.ROOT);
+        List<Integer> matches = new ArrayList<>();
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).getLabel().toLowerCase(Locale.ROOT).contains(searchTerm)) {
+                matches.add(i);
+            }
+        }
+        return matches;
     }
 
     /**
