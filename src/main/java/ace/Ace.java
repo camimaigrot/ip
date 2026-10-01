@@ -1,73 +1,53 @@
 package ace;
 
 import java.util.ArrayList;
-import java.util.Scanner;
-import ace.ui.Messages;
+
+import ace.exception.AceException;
+import ace.storage.Storage;
 import ace.task.Deadline;
 import ace.task.Event;
 import ace.task.Task;
 import ace.task.TaskManager;
 import ace.task.Todo;
-import ace.exception.AceException;
-import ace.storage.Storage;
+import ace.ui.Messages;
+import ace.ui.Ui;
 
+/**
+ * Coordinates task management, persistence and user commands in Ace.
+ */
 public class Ace {
-
-     static final String[] AUTHORIZED_COMMANDS = {
+    static final String[] AUTHORIZED_COMMANDS = {
             "help", "bye", "list", "mark", "unmark", "delete",
             "todo", "deadline", "event"
     };
 
     private static final TaskManager taskManager = new TaskManager();
     private static final Storage storage = new Storage();
-
-    public static void printAceMessage(Object message) {
-        printAceMessage(message, true);
-    }
-
-    public static void printAceMessage(Object message, boolean withSeparation) {
-        if (withSeparation) {
-            printAceSeparation();
-        }
-        System.out.print("\t" + message + "\n");
-        if (withSeparation) {
-            printAceSeparation();
-        }
-    }
-
-    public static void printAceSeparation() {
-        System.out.print("\t" + Messages.HL + "\n");
-    }
+    private static final Ui ui = new Ui();
 
     public static void printTaskList() throws AceException {
-        printAceSeparation();
+        ui.printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
-            printAceMessage("I don't know what happened or if I messed something up, but... you have no tasks available.", false);
+            ui.printAceMessage("I don't know what happened or if I messed something up, but... you have no tasks available.", false);
         } else {
-            printAceMessage("These should be your tasks:\n", false);
+            ui.printAceMessage("These should be your tasks:\n", false);
             for (int i = 0; i < taskCount; i++) {
                 Task task = taskManager.getTask(i);
-                printAceMessage((i + 1) + "." + task, false);
+                ui.printAceMessage((i + 1) + "." + task, false);
             }
         }
-        printAceSeparation();
+        ui.printAceSeparation();
     }
 
     public static void printTaskMarkedDone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
+        ui.printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
     }
 
     public static void printTaskMarkedUndone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
-        printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
-    }
-
-    public static void throwAceError(String error) {
-        printAceSeparation();
-        System.err.print("\t"+error+"\n");
-        printAceSeparation();
+        ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
     }
 
     public static boolean inAuthorizedCommands(String command) {
@@ -89,10 +69,10 @@ public class Ace {
 
         switch (keyword) {
             case "help":
-                printAceMessage("help");
+                ui.printAceMessage("help");
                 break;
             case "bye":
-                printAceMessage(Messages.BYE_MESSAGE);
+                ui.printAceMessage(Messages.BYE_MESSAGE);
                 return false;
             case "list":
                 printTaskList();
@@ -136,7 +116,7 @@ public class Ace {
 
         Task deletedTask = taskManager.deleteTask(taskNumber);
         saveTasks();
-        printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask + "\n\tNow you have... " + taskManager.getTasksCount()+ " tasks in the list.");
+        ui.printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask + "\n\tNow you have... " + taskManager.getTasksCount()+ " tasks in the list.");
     }
 
     private static void markTask(String[] lineWords) throws AceException {
@@ -194,12 +174,10 @@ public class Ace {
     private static void addTask(Task task) throws AceException {
         taskManager.addTask(task);
         saveTasks();
-        printAceMessage("I think I managed to add this new task:\n\t" + task);
+        ui.printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
     public static void main(String[] args) throws AceException {
-        Scanner in = new Scanner(System.in);
-
         try {
             ArrayList<Task> savedTasks = storage.loadTasks();
 
@@ -207,21 +185,21 @@ public class Ace {
                 taskManager.addTask(task);
             }
         } catch (AceException e) {
-            throwAceError(e.getMessage());
+            ui.showError(e.getMessage());
         }
 
-        printAceMessage(Messages.BANNER);
-        printAceMessage(Messages.WELCOME_MESSAGE);
-        printAceMessage(Messages.ASSISTANCE_MESSAGE);
+        ui.printAceMessage(Messages.BANNER);
+        ui.printAceMessage(Messages.WELCOME_MESSAGE);
+        ui.printAceMessage(Messages.ASSISTANCE_MESSAGE);
 
         boolean isRunning = true;
 
-        while (isRunning) {
-            String line = in.nextLine();
+        while (isRunning && ui.hasNextCommand()) {
+            String line = ui.readCommand();
             try {
                 isRunning = processCommand(line);
             } catch (AceException e) {
-                throwAceError(e.getMessage());
+                ui.showError(e.getMessage());
             }
         }
     }
