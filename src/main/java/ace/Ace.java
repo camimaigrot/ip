@@ -4,11 +4,10 @@ import java.util.ArrayList;
 
 import ace.exception.AceException;
 import ace.storage.Storage;
-import ace.task.Deadline;
-import ace.task.Event;
+import ace.parser.Parser;
+import ace.parser.Parser.ParsedCommand;
 import ace.task.Task;
 import ace.task.TaskManager;
-import ace.task.Todo;
 import ace.ui.Messages;
 import ace.ui.Ui;
 
@@ -16,28 +15,24 @@ import ace.ui.Ui;
  * Coordinates task management, persistence and user commands in Ace.
  */
 public class Ace {
-    static final String[] AUTHORIZED_COMMANDS = {
-            "help", "bye", "list", "mark", "unmark", "delete",
-            "todo", "deadline", "event"
-    };
-
     private static final TaskManager taskManager = new TaskManager();
     private static final Storage storage = new Storage();
     private static final Ui ui = new Ui();
 
     public static void printTaskList() throws AceException {
-        ui.printAceSeparation();
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
-            ui.printAceMessage("I don't know what happened or if I messed something up, but... you have no tasks available.", false);
-        } else {
-            ui.printAceMessage("These should be your tasks:\n", false);
-            for (int i = 0; i < taskCount; i++) {
-                Task task = taskManager.getTask(i);
-                ui.printAceMessage((i + 1) + "." + task, false);
-            }
+            ui.printAceMessage("I don't know what happened or if I messed something up, "
+                    + "but... you have no tasks available.");
+            return;
         }
-        ui.printAceSeparation();
+
+        StringBuilder message = new StringBuilder("These should be your tasks:");
+        for (int i = 0; i < taskCount; i++) {
+            Task task = taskManager.getTask(i);
+            message.append("\n\t").append(i + 1).append(".").append(task);
+        }
+        ui.printAceMessage(message);
     }
 
     public static void printTaskMarkedDone(int taskNumber) throws AceException {
@@ -50,125 +45,51 @@ public class Ace {
         ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
     }
 
-    public static boolean inAuthorizedCommands(String command) {
-        for (int i = 0; i < AUTHORIZED_COMMANDS.length; i++) {
-            if (AUTHORIZED_COMMANDS[i].equals(command)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
+    /**
+     * Executes one parsed user command.
+     *
+     * @param line full command entered by the user
+     * @return false if the user wants to exit, otherwise true
+     * @throws AceException if the command cannot be completed
+     */
     private static boolean processCommand(String line) throws AceException {
-        String[] lineWords = line.split(" ");
-        String keyword = lineWords[0];
+        ParsedCommand command = Parser.parse(line);
 
-        if (!inAuthorizedCommands(keyword)) {
+        switch (command.getKeyword()) {
+        case "help":
+            ui.printAceMessage("help");
+            break;
+        case "bye":
+            ui.printAceMessage(Messages.BYE_MESSAGE);
+            return false;
+        case "list":
+            printTaskList();
+            break;
+        case "mark":
+            taskManager.markAsDone(command.getTaskNumber());
+            saveTasks();
+            printTaskMarkedDone(command.getTaskNumber());
+            break;
+        case "unmark":
+            taskManager.markAsUndone(command.getTaskNumber());
+            saveTasks();
+            printTaskMarkedUndone(command.getTaskNumber());
+            break;
+        case "delete":
+            Task deletedTask = taskManager.deleteTask(command.getTaskNumber());
+            saveTasks();
+            ui.printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask
+                    + "\n\tNow you have... " + taskManager.getTasksCount() + " tasks in the list.");
+            break;
+        case "todo":
+        case "deadline":
+        case "event":
+            addTask(command.getTask());
+            break;
+        default:
             throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
         }
-
-        switch (keyword) {
-            case "help":
-                ui.printAceMessage("help");
-                break;
-            case "bye":
-                ui.printAceMessage(Messages.BYE_MESSAGE);
-                return false;
-            case "list":
-                printTaskList();
-                break;
-            case "mark":
-                markTask(lineWords);
-                break;
-            case "unmark":
-                unmarkTask(lineWords);
-                break;
-            case "todo":
-                addTodo(line);
-                break;
-            case "deadline":
-                addDeadline(line);
-                break;
-            case "event":
-                addEvent(line);
-                break;
-            case "delete":
-                deleteTask(lineWords);
-                break;
-            default:
-                throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
-        }
         return true;
-    }
-
-    private static void deleteTask(String[] lineWords) throws AceException {
-        if (lineWords.length != 2) {
-            throw new AceException(Messages.INVALID_DELETE_EXCEPTION);
-        }
-
-        int taskNumber;
-
-        try {
-            taskNumber = Integer.parseInt(lineWords[1]) - 1;
-        } catch (NumberFormatException e) {
-            throw new AceException(Messages.INVALID_DELETE_EXCEPTION);
-        }
-
-        Task deletedTask = taskManager.deleteTask(taskNumber);
-        saveTasks();
-        ui.printAceMessage("Should be good? I've removed this task:\n\t" + deletedTask + "\n\tNow you have... " + taskManager.getTasksCount()+ " tasks in the list.");
-    }
-
-    private static void markTask(String[] lineWords) throws AceException {
-        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-        taskManager.markAsDone(taskNumber);
-        saveTasks();
-        printTaskMarkedDone(taskNumber);
-    }
-
-    private static void unmarkTask(String[] lineWords) throws AceException {
-        int taskNumber = Integer.parseInt(lineWords[1]) - 1;
-        taskManager.markAsUndone(taskNumber);
-        saveTasks();
-        printTaskMarkedUndone(taskNumber);
-    }
-
-    private static void addTodo(String line) throws AceException {
-        String description = line.substring("todo".length()).trim();
-        Task task = new Todo(description);
-        addTask(task);
-    }
-
-    private static void addDeadline(String line) throws AceException {
-        int byIndex = line.indexOf("/by");
-        if (byIndex == -1) {
-            throw new AceException(Messages.NO_BY_DEADLINE_EXCEPTION);
-        }
-        String description = line.substring(
-                "deadline".length(), byIndex).trim();
-        String by = line.substring(byIndex + 3).trim();
-
-        Task task = new Deadline(description, by);
-        addTask(task);
-    }
-
-    private static void addEvent(String line) throws AceException {
-        int fromIndex = line.indexOf("/from");
-        if (fromIndex == -1) {
-            throw new AceException(Messages.NO_FROM_EVENT_EXCEPTION);
-        }
-        int toIndex = line.indexOf("/to");
-        if (toIndex == -1) {
-            throw new AceException(Messages.NO_TO_EVENT_EXCEPTION);
-        }
-
-        String description = line.substring(
-                "event".length(), fromIndex).trim();
-        String from = line.substring(fromIndex + 5, toIndex).trim();
-        String to = line.substring(toIndex + 3).trim();
-
-        Task task = new Event(description, from, to);
-        addTask(task);
     }
 
     private static void addTask(Task task) throws AceException {
