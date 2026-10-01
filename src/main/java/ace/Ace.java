@@ -78,10 +78,12 @@ public class Ace {
         ParsedCommand command = Parser.parse(line);
 
         switch (command.getKeyword()) {
-        case "help":
-            ui.printAceMessage("help");
-            break;
-        case "bye":
+
+            case "help":
+                ui.printAceMessage(Messages.HELP_MESSAGE);
+                break;
+
+            case "bye":
             ui.printAceMessage(Messages.BYE_MESSAGE);
             return false;
         case "list":
