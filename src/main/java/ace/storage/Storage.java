@@ -1,5 +1,9 @@
 package ace.storage;
 
+import ace.exception.AceException;
+import ace.task.*;
+import ace.ui.Messages;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,14 +11,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-
-import ace.exception.AceException;
-import ace.task.Deadline;
-import ace.task.Event;
-import ace.task.Task;
-import ace.task.TaskManager;
-import ace.task.Todo;
-import ace.ui.Messages;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 /**
  * Loads and saves tasks in Ace's text file.
@@ -70,25 +68,44 @@ public class Storage {
         }
     }
 
+
     private String taskToString(Task task) {
         String status = task.isDone() ? "1" : "0";
+        String description = Base64.getEncoder().encodeToString(
+                task.getLabel().getBytes(StandardCharsets.UTF_8));
+
         if (task instanceof Deadline) {
             Deadline deadline = (Deadline) task;
-            return "D | " + status + " | " + task.getLabel() + " | " + deadline.getBy();
+            return "D2 | " + status + " | " + description
+                    + " | " + deadline.getBy();
         }
+
         if (task instanceof Event) {
             Event event = (Event) task;
-            return "E | " + status + " | " + task.getLabel()
+            return "E2 | " + status + " | " + description
                     + " | " + event.getFrom() + " | " + event.getTo();
         }
-        return "T | " + status + " | " + task.getLabel();
+
+        return "T2 | " + status + " | " + description;
+    }
+
+
+    private String decodeDescription(String encoded) throws AceException {
+        try {
+            byte[] bytes = Base64.getDecoder().decode(encoded);
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException exception) {
+            throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+        }
     }
 
     private Task parseTask(String line) throws AceException {
         String[] parts = line.split("\\s*\\|\\s*", -1);
+
         if (parts.length < 3) {
             throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
+
         boolean isDone;
         if (parts[1].equals("1")) {
             isDone = true;
@@ -97,29 +114,44 @@ public class Storage {
         } else {
             throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
-        switch (parts[0]) {
-        case "T":
-            if (parts.length != 3) {
+
+        String type = parts[0];
+        String description = type.endsWith("2")
+                ? decodeDescription(parts[2])
+                : parts[2];
+
+        switch (type) {
+            case "T":
+            case "T2":
+                if (parts.length != 3) {
+                    throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+                }
+                return new Todo(description, isDone);
+
+            case "D":
+            case "D2":
+                if (parts.length != 4) {
+                    throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+                }
+                return new Deadline(description, parseStoredDate(parts[3]), isDone);
+
+            case "E":
+            case "E2":
+                if (parts.length != 5) {
+                    throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+                }
+
+                LocalDate from = parseStoredDate(parts[3]);
+                LocalDate to = parseStoredDate(parts[4]);
+
+                if (to.isBefore(from)) {
+                    throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+                }
+
+                return new Event(description, from, to, isDone);
+
+            default:
                 throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-            }
-            return new Todo(parts[2], isDone);
-        case "D":
-            if (parts.length != 4) {
-                throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-            }
-            return new Deadline(parts[2], parseStoredDate(parts[3]), isDone);
-        case "E":
-            if (parts.length != 5) {
-                throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-            }
-            LocalDate from = parseStoredDate(parts[3]);
-            LocalDate to = parseStoredDate(parts[4]);
-            if (to.isBefore(from)) {
-                throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-            }
-            return new Event(parts[2], from, to, isDone);
-        default:
-            throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
     }
 
