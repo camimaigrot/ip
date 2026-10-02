@@ -4,7 +4,7 @@ Ace is a command-line task manager for tracking to-dos, deadlines, and events.
 It supports marking tasks as completed, deleting tasks, searching descriptions,
 and saving your tasks between sessions.
 
-See the [Ace User Guide](docs/README.md) for command syntax, examples, and screenshots.
+See the [Ace User Guide](https://github.com/camimaigrot/ip/blob/master/docs/README.md) for command syntax, examples, and screenshots.
 
 ## Requirements
 
