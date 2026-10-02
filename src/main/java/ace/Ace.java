@@ -1,9 +1,9 @@
 package ace;
 
 import ace.exception.AceException;
-import ace.storage.Storage;
 import ace.parser.Parser;
 import ace.parser.Parser.ParsedCommand;
+import ace.storage.Storage;
 import ace.task.Task;
 import ace.task.TaskManager;
 import ace.ui.Messages;
@@ -78,12 +78,10 @@ public class Ace {
         ParsedCommand command = Parser.parse(line);
 
         switch (command.getKeyword()) {
-
-            case "help":
-                ui.printAceMessage(Messages.HELP_MESSAGE);
-                break;
-
-            case "bye":
+        case "help":
+            ui.printAceMessage(Messages.HELP_MESSAGE);
+            break;
+        case "bye":
             ui.printAceMessage(Messages.BYE_MESSAGE);
             return false;
         case "list":

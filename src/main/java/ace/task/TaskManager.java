@@ -1,11 +1,11 @@
 package ace.task;
 
+import ace.exception.AceException;
+import ace.ui.Messages;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import ace.exception.AceException;
-import ace.ui.Messages;
 
 /**
  * Owns Ace's task list and provides operations to manage its tasks.
