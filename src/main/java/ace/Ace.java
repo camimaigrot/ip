@@ -1,24 +1,29 @@
 package ace;
 
+import java.util.List;
+
 import ace.exception.AceException;
-import ace.storage.Storage;
 import ace.parser.Parser;
 import ace.parser.Parser.ParsedCommand;
+import ace.storage.Storage;
 import ace.task.Task;
 import ace.task.TaskManager;
 import ace.ui.Messages;
 import ace.ui.Ui;
 
-import java.util.List;
-
 /**
- * Coordinates task management, persistence and user commands in Ace.
+ * Coordinates task management, persistence, and user commands in Ace.
  */
 public class Ace {
-    private static TaskManager taskManager = new TaskManager();
     private static final Storage storage = new Storage();
     private static final Ui ui = new Ui();
+    private static TaskManager taskManager = new TaskManager();
 
+    /**
+     * Displays the current task list, or a message when it is empty.
+     *
+     * @throws AceException if a task cannot be retrieved
+     */
     public static void printTaskList() throws AceException {
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
@@ -57,14 +62,26 @@ public class Ace {
         ui.printAceMessage(message);
     }
 
+    /**
+     * Displays the task that was marked as completed.
+     *
+     * @param taskNumber zero-based index of the completed task
+     * @throws AceException if the task number is invalid
+     */
     public static void printTaskMarkedDone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
-        ui.printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
+        ui.printAceMessage("Oh wow, you managed to finish this task:\n\t" + task);
     }
 
+    /**
+     * Displays the task that was marked as incomplete.
+     *
+     * @param taskNumber zero-based index of the incomplete task
+     * @throws AceException if the task number is invalid
+     */
     public static void printTaskMarkedUndone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
-        ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
+        ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n\t" + task);
     }
 
     /**
@@ -78,12 +95,10 @@ public class Ace {
         ParsedCommand command = Parser.parse(line);
 
         switch (command.getKeyword()) {
-
-            case "help":
-                ui.printAceMessage(Messages.HELP_MESSAGE);
-                break;
-
-            case "bye":
+        case "help":
+            ui.printAceMessage(Messages.HELP_MESSAGE);
+            break;
+        case "bye":
             ui.printAceMessage(Messages.BYE_MESSAGE);
             return false;
         case "list":
@@ -119,17 +134,37 @@ public class Ace {
         return true;
     }
 
+    /**
+     * Adds a task, saves the updated list, and displays a confirmation.
+     *
+     * @param task task to add
+     * @throws AceException if the task cannot be added or saved
+     */
     private static void addTask(Task task) throws AceException {
         taskManager.addTask(task);
         saveTasks();
         ui.printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
-    public static void main(String[] args) throws AceException {
+    /**
+     * Persists the current task list.
+     *
+     * @throws AceException if the task file cannot be written
+     */
+    private static void saveTasks() throws AceException {
+        storage.saveTasks(taskManager);
+    }
+
+    /**
+     * Loads saved tasks and handles commands until the user exits.
+     *
+     * @param args unused command-line arguments
+     */
+    public static void main(String[] args) {
         try {
             taskManager = new TaskManager(storage.loadTasks());
-        } catch (AceException e) {
-            ui.showError(e.getMessage());
+        } catch (AceException exception) {
+            ui.showError(exception.getMessage());
         }
 
         ui.printAceMessage(Messages.BANNER);
@@ -137,18 +172,13 @@ public class Ace {
         ui.printAceMessage(Messages.ASSISTANCE_MESSAGE);
 
         boolean isRunning = true;
-
         while (isRunning && ui.hasNextCommand()) {
             String line = ui.readCommand();
             try {
                 isRunning = processCommand(line);
-            } catch (AceException e) {
-                ui.showError(e.getMessage());
+            } catch (AceException exception) {
+                ui.showError(exception.getMessage());
             }
         }
-    }
-
-    private static void saveTasks() throws AceException {
-        storage.saveTasks(taskManager);
     }
 }

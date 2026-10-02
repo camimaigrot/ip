@@ -39,6 +39,7 @@ public class Storage {
                 Files.createFile(FILE_PATH);
                 return tasks;
             }
+
             List<String> lines = Files.readAllLines(FILE_PATH);
             for (String line : lines) {
                 if (!line.isBlank()) {
@@ -62,6 +63,7 @@ public class Storage {
         for (int i = 0; i < taskManager.getTasksCount(); i++) {
             lines.add(taskToString(taskManager.getTask(i)));
         }
+
         try {
             Files.createDirectories(FILE_PATH.getParent());
             Files.write(FILE_PATH, lines);
@@ -70,33 +72,38 @@ public class Storage {
         }
     }
 
+    /**
+     * Converts a task to the format used in the saved task file.
+     *
+     * @param task task to serialize
+     * @return one line representing the task
+     */
     private String taskToString(Task task) {
         String status = task.isDone() ? "1" : "0";
-        if (task instanceof Deadline) {
-            Deadline deadline = (Deadline) task;
+        if (task instanceof Deadline deadline) {
             return "D | " + status + " | " + task.getLabel() + " | " + deadline.getBy();
         }
-        if (task instanceof Event) {
-            Event event = (Event) task;
+        if (task instanceof Event event) {
             return "E | " + status + " | " + task.getLabel()
                     + " | " + event.getFrom() + " | " + event.getTo();
         }
         return "T | " + status + " | " + task.getLabel();
     }
 
+    /**
+     * Reconstructs a task from one line of the saved task file.
+     *
+     * @param line serialized task
+     * @return reconstructed task
+     * @throws AceException if the saved task has an invalid format
+     */
     private Task parseTask(String line) throws AceException {
         String[] parts = line.split("\\s*\\|\\s*", -1);
         if (parts.length < 3) {
             throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
-        boolean isDone;
-        if (parts[1].equals("1")) {
-            isDone = true;
-        } else if (parts[1].equals("0")) {
-            isDone = false;
-        } else {
-            throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-        }
+
+        boolean isDone = parseStatus(parts[1]);
         switch (parts[0]) {
         case "T":
             if (parts.length != 3) {
@@ -123,6 +130,30 @@ public class Storage {
         }
     }
 
+    /**
+     * Validates the completion flag in a saved task.
+     *
+     * @param status task completion flag, either 0 or 1
+     * @return true for a completed task
+     * @throws AceException if the flag is invalid
+     */
+    private boolean parseStatus(String status) throws AceException {
+        if (status.equals("1")) {
+            return true;
+        }
+        if (status.equals("0")) {
+            return false;
+        }
+        throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+    }
+
+    /**
+     * Parses an ISO-format date from the saved task file.
+     *
+     * @param value stored date
+     * @return parsed date
+     * @throws AceException if the date format is incompatible
+     */
     private LocalDate parseStoredDate(String value) throws AceException {
         try {
             return LocalDate.parse(value);

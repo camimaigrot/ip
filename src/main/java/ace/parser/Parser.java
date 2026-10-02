@@ -1,4 +1,3 @@
-
 package ace.parser;
 
 import java.time.LocalDate;
@@ -16,11 +15,11 @@ import ace.ui.Messages;
  */
 public final class Parser {
     private static final String INVALID_DATE_MESSAGE =
-            "Please enter a valid date in yyyy-MM-dd format.";
+        "Please enter a valid date in yyyy-MM-dd format.";
     private static final String INVALID_DATE_RANGE_MESSAGE =
-            "The event cannot end before it starts.";
+        "The event cannot end before it starts.";
     private static final String EMPTY_FIND_MESSAGE =
-            "Please specify a keyword to search for.";
+        "Please specify a keyword to search for.";
 
     private Parser() {
     }
@@ -43,43 +42,43 @@ public final class Parser {
         String keyword = words[0];
 
         switch (keyword) {
-            case "help":
-            case "bye":
-            case "list":
-                return new ParsedCommand(keyword, null, -1, null);
+        case "help":
+        case "bye":
+        case "list":
+            return new ParsedCommand(keyword, null, -1, null);
 
-            case "mark":
-            case "unmark":
-                return new ParsedCommand(keyword, null,
-                        parseTaskNumber(line, Messages.UNKNOWN_TASK_EXCEPTION),
-                        null);
+        case "mark":
+        case "unmark":
+            return new ParsedCommand(keyword, null,
+                    parseTaskNumber(line, Messages.UNKNOWN_TASK_EXCEPTION),
+                    null);
 
-            case "delete":
-                return new ParsedCommand(keyword, null,
-                        parseTaskNumber(line, Messages.INVALID_DELETE_EXCEPTION),
-                        null);
+        case "delete":
+            return new ParsedCommand(keyword, null,
+                    parseTaskNumber(line, Messages.INVALID_DELETE_EXCEPTION),
+                    null);
 
-            case "todo":
-                return new ParsedCommand(keyword,
-                        new Todo(getDescription(line, keyword)), -1, null);
+        case "todo":
+            return new ParsedCommand(keyword,
+                    new Todo(getDescription(line, keyword)), -1, null);
 
-            case "deadline":
-                return new ParsedCommand(keyword, parseDeadline(line), -1, null);
+        case "deadline":
+            return new ParsedCommand(keyword, parseDeadline(line), -1, null);
 
-            case "event":
-                return new ParsedCommand(keyword, parseEvent(line), -1, null);
+        case "event":
+            return new ParsedCommand(keyword, parseEvent(line), -1, null);
 
-            case "find":
-                String searchTerm = getDescription(line, keyword);
+        case "find":
+            String searchTerm = getDescription(line, keyword);
 
-                if (searchTerm.isEmpty()) {
-                    throw new AceException(EMPTY_FIND_MESSAGE);
-                }
+            if (searchTerm.isEmpty()) {
+                throw new AceException(EMPTY_FIND_MESSAGE);
+            }
 
-                return new ParsedCommand(keyword, null, -1, searchTerm);
+            return new ParsedCommand(keyword, null, -1, searchTerm);
 
-            default:
-                throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
+        default:
+            throw new AceException(Messages.UNKNOWN_COMMAND_EXCEPTION);
         }
     }
 
@@ -206,7 +205,7 @@ public final class Parser {
         private final String searchTerm;
 
         private ParsedCommand(String keyword, Task task,
-                              int taskNumber, String searchTerm) {
+                int taskNumber, String searchTerm) {
             this.keyword = keyword;
             this.task = task;
             this.taskNumber = taskNumber;
