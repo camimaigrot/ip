@@ -19,6 +19,11 @@ public class Ace {
     private static final Storage storage = new Storage();
     private static final Ui ui = new Ui();
 
+    /**
+     * Displays all tasks using their one-based task numbers.
+     *
+     * @throws AceException if a task cannot be retrieved.
+     */
     public static void printTaskList() throws AceException {
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
@@ -57,11 +62,23 @@ public class Ace {
         ui.printAceMessage(message);
     }
 
+    /**
+     * Displays confirmation after a task has been marked as completed.
+     *
+     * @param taskNumber zero-based index of the completed task.
+     * @throws AceException if the task number is invalid.
+     */
     public static void printTaskMarkedDone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         ui.printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
     }
 
+    /**
+     * Displays confirmation after a task has been marked as incomplete.
+     *
+     * @param taskNumber zero-based index of the incomplete task.
+     * @throws AceException if the task number is invalid.
+     */
     public static void printTaskMarkedUndone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
@@ -117,12 +134,25 @@ public class Ace {
         return true;
     }
 
+    /**
+     * Adds a task, saves the updated list, and displays confirmation.
+     *
+     * @param task task to add.
+     * @throws AceException if the task is invalid or cannot be saved.
+     */
     private static void addTask(Task task) throws AceException {
         taskManager.addTask(task);
         saveTasks();
         ui.printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
+    /**
+     * Loads saved tasks and runs Ace until the user exits or input ends.
+     * Stops if loading fails to avoid overwriting existing task data.
+     *
+     * @param args command-line arguments; not used.
+     * @throws AceException if an unexpected application error occurs.
+     */
     public static void main(String[] args) throws AceException {
         try {
             taskManager = new TaskManager(storage.loadTasks());
@@ -147,6 +177,11 @@ public class Ace {
         }
     }
 
+    /**
+     * Persists the current task list to Ace's data file.
+     *
+     * @throws AceException if the task list cannot be saved.
+     */
     private static void saveTasks() throws AceException {
         storage.saveTasks(taskManager);
     }
