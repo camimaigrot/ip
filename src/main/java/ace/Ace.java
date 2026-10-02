@@ -128,6 +128,7 @@ public class Ace {
             taskManager = new TaskManager(storage.loadTasks());
         } catch (AceException e) {
             ui.showError(e.getMessage());
+            return;
         }
 
         ui.printAceMessage(Messages.BANNER);
