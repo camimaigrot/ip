@@ -19,6 +19,11 @@ public class Ace {
     private static final Storage storage = new Storage();
     private static final Ui ui = new Ui();
 
+    /**
+     * Displays the current task list, or a message when it is empty.
+     *
+     * @throws AceException if a task cannot be retrieved
+     */
     public static void printTaskList() throws AceException {
         int taskCount = taskManager.getTasksCount();
         if (taskCount == 0) {
@@ -57,11 +62,23 @@ public class Ace {
         ui.printAceMessage(message);
     }
 
+    /**
+     * Displays confirmation after a task has been marked as completed.
+     *
+     * @param taskNumber zero-based index of the completed task
+     * @throws AceException if the task number is invalid
+     */
     public static void printTaskMarkedDone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         ui.printAceMessage("Oh wow, you managed to finish this task:\n" + "\t" + task);
     }
 
+    /**
+     * Displays confirmation after a task has been marked as incomplete.
+     *
+     * @param taskNumber zero-based index of the incomplete task
+     * @throws AceException if the task number is invalid
+     */
     public static void printTaskMarkedUndone(int taskNumber) throws AceException {
         Task task = taskManager.getTask(taskNumber);
         ui.printAceMessage("I'm sorry, looks like this task isn't done after all:\n" + "\t" + task);
@@ -123,11 +140,18 @@ public class Ace {
         ui.printAceMessage("I think I managed to add this new task:\n\t" + task);
     }
 
+    /**
+     * Loads saved tasks and handles commands until the user exits.
+     * Stops if loading fails to avoid overwriting existing task data.
+     *
+     * @param args unused command-line arguments
+     */
     public static void main(String[] args) throws AceException {
         try {
             taskManager = new TaskManager(storage.loadTasks());
-        } catch (AceException e) {
-            ui.showError(e.getMessage());
+        } catch (AceException exception) {
+            ui.showError(exception.getMessage());
+            return;
         }
 
         ui.printAceMessage(Messages.BANNER);
