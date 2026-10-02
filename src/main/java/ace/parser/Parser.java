@@ -1,3 +1,4 @@
+
 package ace.parser;
 
 import java.time.LocalDate;
@@ -15,11 +16,11 @@ import ace.ui.Messages;
  */
 public final class Parser {
     private static final String INVALID_DATE_MESSAGE =
-        "Please enter a valid date in yyyy-MM-dd format.";
+            "Please enter a valid date in yyyy-MM-dd format.";
     private static final String INVALID_DATE_RANGE_MESSAGE =
-        "The event cannot end before it starts.";
+            "The event cannot end before it starts.";
     private static final String EMPTY_FIND_MESSAGE =
-        "Please specify a keyword to search for.";
+            "Please specify a keyword to search for.";
 
     private Parser() {
     }

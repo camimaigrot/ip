@@ -7,7 +7,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import ace.exception.AceException;
 import ace.task.Deadline;
 import ace.task.Event;
@@ -39,7 +40,6 @@ public class Storage {
                 Files.createFile(FILE_PATH);
                 return tasks;
             }
-
             List<String> lines = Files.readAllLines(FILE_PATH);
             for (String line : lines) {
                 if (!line.isBlank()) {
@@ -63,7 +63,6 @@ public class Storage {
         for (int i = 0; i < taskManager.getTasksCount(); i++) {
             lines.add(taskToString(taskManager.getTask(i)));
         }
-
         try {
             Files.createDirectories(FILE_PATH.getParent());
             Files.write(FILE_PATH, lines);
@@ -72,88 +71,89 @@ public class Storage {
         }
     }
 
-    /**
-     * Converts a task to the format used in the saved task file.
-     *
-     * @param task task to serialize
-     * @return one line representing the task
-     */
-    private String taskToString(Task task) {
-        String status = task.isDone() ? "1" : "0";
-        if (task instanceof Deadline deadline) {
-            return "D | " + status + " | " + task.getLabel() + " | " + deadline.getBy();
+    private String decodeDescription(String encoded) throws AceException {
+        try {
+            byte[] bytes = Base64.getDecoder().decode(encoded);
+            return new String(bytes, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException exception) {
+            throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
-        if (task instanceof Event event) {
-            return "E | " + status + " | " + task.getLabel()
-                    + " | " + event.getFrom() + " | " + event.getTo();
-        }
-        return "T | " + status + " | " + task.getLabel();
     }
 
-    /**
-     * Reconstructs a task from one line of the saved task file.
-     *
-     * @param line serialized task
-     * @return reconstructed task
-     * @throws AceException if the saved task has an invalid format
-     */
+    private String taskToString(Task task) {
+        String status = task.isDone() ? "1" : "0";
+        String description = Base64.getEncoder().encodeToString(
+                task.getLabel().getBytes(StandardCharsets.UTF_8));
+
+        if (task instanceof Deadline deadline) {
+            return "D2 | " + status + " | " + description
+                    + " | " + deadline.getBy();
+        }
+
+        if (task instanceof Event event) {
+            return "E2 | " + status + " | " + description
+                    + " | " + event.getFrom() + " | " + event.getTo();
+        }
+
+        return "T2 | " + status + " | " + description;
+    }
+
     private Task parseTask(String line) throws AceException {
         String[] parts = line.split("\\s*\\|\\s*", -1);
+
         if (parts.length < 3) {
             throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
 
-        boolean isDone = parseStatus(parts[1]);
-        switch (parts[0]) {
+        boolean isDone;
+        if (parts[1].equals("1")) {
+            isDone = true;
+        } else if (parts[1].equals("0")) {
+            isDone = false;
+        } else {
+            throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
+        }
+
+        String type = parts[0];
+        String description = type.endsWith("2")
+                ? decodeDescription(parts[2])
+                : parts[2];
+
+        switch (type) {
         case "T":
+        case "T2":
             if (parts.length != 3) {
                 throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
             }
-            return new Todo(parts[2], isDone);
+            return new Todo(description, isDone);
+
         case "D":
+        case "D2":
             if (parts.length != 4) {
                 throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
             }
-            return new Deadline(parts[2], parseStoredDate(parts[3]), isDone);
+            return new Deadline(description, parseStoredDate(parts[3]), isDone);
+
         case "E":
+        case "E2":
             if (parts.length != 5) {
                 throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
             }
+
             LocalDate from = parseStoredDate(parts[3]);
             LocalDate to = parseStoredDate(parts[4]);
+
             if (to.isBefore(from)) {
                 throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
             }
-            return new Event(parts[2], from, to, isDone);
+
+            return new Event(description, from, to, isDone);
+
         default:
             throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
         }
     }
 
-    /**
-     * Validates the completion flag in a saved task.
-     *
-     * @param status task completion flag, either 0 or 1
-     * @return true for a completed task
-     * @throws AceException if the flag is invalid
-     */
-    private boolean parseStatus(String status) throws AceException {
-        if (status.equals("1")) {
-            return true;
-        }
-        if (status.equals("0")) {
-            return false;
-        }
-        throw new AceException(Messages.CORRUPTED_DATA_EXCEPTION);
-    }
-
-    /**
-     * Parses an ISO-format date from the saved task file.
-     *
-     * @param value stored date
-     * @return parsed date
-     * @throws AceException if the date format is incompatible
-     */
     private LocalDate parseStoredDate(String value) throws AceException {
         try {
             return LocalDate.parse(value);
