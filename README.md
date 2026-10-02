@@ -46,4 +46,11 @@ Run the automated regression tests with:
 make test
 ```
 
-`make test` is available after applying the automated-tests increment.
+## Run the released application
+
+1. Install Java 25.
+2. Download `ip.jar` from the [latest release](https://github.com/camimaigrot/ip/releases/latest).
+3. Open a terminal in the folder containing the JAR.
+4. Run:
+
+   java -jar ip.jar

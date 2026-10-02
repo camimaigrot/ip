@@ -28,6 +28,21 @@ Ace will start in IntelliJ's Run console and display its welcome message:
 
 ![Ace welcome screenshot](welcome.png)
 
+### Running Ace from the JAR file
+
+1. Make sure you have Java 25 installed. You can verify this by running `java -version` in a terminal.
+2. Download `ip.jar` from the [latest GitHub release](https://github.com/camimaigrot/ip/releases/latest).
+3. Open a terminal and navigate to the folder containing `ip.jar`.
+4. Run the following command:
+
+   ```bash
+   java -jar ip.jar
+   ```
+
+Ace will start in your terminal. Enter `help` to see the available commands.
+
+Ace automatically creates a `data` folder to save your tasks. Run the application from the same folder each time to access your saved tasks.
+
 ### Using Ace
 
 Enter a command in the console and press **Enter** to execute it. For example:
@@ -209,7 +224,8 @@ find report
 Ace displays the matching tasks. For example, the deadline below matches because its description contains `report`:
 
 ```text
-2.[D][ ] submit report (by: Oct 15 2026)
+Here are the matching tasks in your list:
+    2.[D][ ] submit report (by: Oct 15 2026)
 ```
 
 Searching for `report` or `REPORT` produces the same matches.
